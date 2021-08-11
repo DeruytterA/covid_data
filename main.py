@@ -2,6 +2,8 @@ import csv
 import datetime
 import json
 import time
+import urllib.request
+import zipfile
 
 import wget
 
@@ -9,12 +11,19 @@ start = time.time()
 
 url_cases = "https://epistat.sciensano.be/Data/COVID19BE_CASES_AGESEX.json"
 url_vacc = "https://epistat.sciensano.be/Data/COVID19BE_VACC.json"
+url_population = "https://statbel.fgov.be/sites/default/files/files/opendata/bevolking%20naar%20woonplaats%2C%20nationaliteit%20burgelijke%20staat%20%2C%20leeftijd%20en%20geslacht/TF_SOC_POP_STRUCT_2021.zip"
 
-wget.download(url_cases, './downloads/COVID19BE_CASES_AGESEX.json')
+contents = urllib.request.Request(url_population,
+                                  headers={'Content-Type': 'application/zip', 'User-Agent': 'Mozilla/5.0'})
+
 wget.download(url_vacc, './downloads/COVID19BE_VACC.json')
+wget.download(url_population, './downloads/TF_SOC_POP_STRUCT_2021.zip')
 
 data_json_cases = 0
 data_json_vacc = 0
+
+with zipfile.ZipFile('./downloads/TF_SOC_POP_STRUCT_2021.zip', 'r') as zip_ref:
+    zip_ref.extractall('./downloads/')
 
 with open("./downloads/COVID19BE_CASES_AGESEX.json") as file:
     data_json_cases = json.loads(file.read())
