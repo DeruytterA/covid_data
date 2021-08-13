@@ -2,8 +2,6 @@ import csv
 import datetime
 import json
 import time
-import urllib.request
-import zipfile
 
 import wget
 
@@ -11,19 +9,19 @@ start = time.time()
 
 url_cases = "https://epistat.sciensano.be/Data/COVID19BE_CASES_AGESEX.json"
 url_vacc = "https://epistat.sciensano.be/Data/COVID19BE_VACC.json"
-url_population = "https://statbel.fgov.be/sites/default/files/files/opendata/bevolking%20naar%20woonplaats%2C%20nationaliteit%20burgelijke%20staat%20%2C%20leeftijd%20en%20geslacht/TF_SOC_POP_STRUCT_2021.zip"
+# url_population = "https://statbel.fgov.be/sites/default/files/files/opendata/bevolking%20naar%20woonplaats%2C%20nationaliteit%20burgelijke%20staat%20%2C%20leeftijd%20en%20geslacht/TF_SOC_POP_STRUCT_2021.zip"
 
-contents = urllib.request.Request(url_population,
-                                  headers={'Content-Type': 'application/zip', 'User-Agent': 'Mozilla/5.0'})
+# contents = urllib.request.Request(url_population,
+#                                   headers={'Content-Type': 'application/zip', 'User-Agent': 'Mozilla/5.0'})
 
 wget.download(url_vacc, './downloads/COVID19BE_VACC.json')
-wget.download(url_population, './downloads/TF_SOC_POP_STRUCT_2021.zip')
+wget.download(url_cases, './downloads/COVID19BE_CASES_AGESEX.json')
 
 data_json_cases = 0
 data_json_vacc = 0
 
-with zipfile.ZipFile('./downloads/TF_SOC_POP_STRUCT_2021.zip', 'r') as zip_ref:
-    zip_ref.extractall('./downloads/')
+# with zipfile.ZipFile('./downloads/TF_SOC_POP_STRUCT_2021.zip', 'r') as zip_ref:
+#    zip_ref.extractall('./downloads/')
 
 with open("./downloads/COVID19BE_CASES_AGESEX.json") as file:
     data_json_cases = json.loads(file.read())
@@ -32,10 +30,14 @@ with open("./downloads/COVID19BE_VACC.json") as file:
     data_json_vacc = json.loads(file.read())
 
 hash_population_age = {
-    "Flanders": {'0-17': 0, '18-34': 0, '35-44': 0, '45-54': 0, '55-64': 0, '65-74': 0, '75-84': 0, '85+': 0},
-    "Wallonia": {'0-17': 0, '18-34': 0, '35-44': 0, '45-54': 0, '55-64': 0, '65-74': 0, '75-84': 0, '85+': 0},
-    "Brussels": {'0-17': 0, '18-34': 0, '35-44': 0, '45-54': 0, '55-64': 0, '65-74': 0, '75-84': 0, '85+': 0},
-    "Ostbelgien": {'0-17': 0, '18-34': 0, '35-44': 0, '45-54': 0, '55-64': 0, '65-74': 0, '75-84': 0, '85+': 0}
+    "Flanders": {'00-11': 0, '12-15': 0, '16-17': 0, '18-24': 0, '25-34': 0, '35-44': 0, '45-54': 0, '55-64': 0,
+                 '65-74': 0, '75-84': 0, '85+': 0},
+    "Wallonia": {'00-11': 0, '12-15': 0, '16-17': 0, '18-24': 0, '25-34': 0, '35-44': 0, '45-54': 0, '55-64': 0,
+                 '65-74': 0, '75-84': 0, '85+': 0},
+    "Brussels": {'00-11': 0, '12-15': 0, '16-17': 0, '18-24': 0, '25-34': 0, '35-44': 0, '45-54': 0, '55-64': 0,
+                 '65-74': 0, '75-84': 0, '85+': 0},
+    "Ostbelgien": {'00-11': 0, '12-15': 0, '16-17': 0, '18-24': 0, '25-34': 0, '35-44': 0, '45-54': 0, '55-64': 0,
+                   '65-74': 0, '75-84': 0, '85+': 0}
 }
 
 with open("./downloads/TF_SOC_POP_STRUCT_2021.txt", newline='') as file:
@@ -44,10 +46,16 @@ with open("./downloads/TF_SOC_POP_STRUCT_2021.txt", newline='') as file:
         if row[1] == "TX_DESCR_NL":
             continue  # Skip the header of the file
         if row[10] == 'Vlaams Gewest':
-            if int(row[19]) <= 17:
-                hash_population_age["Flanders"]['0-17'] += int(row[20])
+            if int(row[19]) <= 11:
+                hash_population_age["Flanders"]['00-11'] += int(row[20])
+            elif int(row[19]) <= 15:
+                hash_population_age["Flanders"]['12-15'] += int(row[20])
+            elif int(row[19]) <= 17:
+                hash_population_age["Flanders"]['16-17'] += int(row[20])
+            elif int(row[19]) <= 24:
+                hash_population_age["Flanders"]['18-24'] += int(row[20])
             elif int(row[19]) <= 34:
-                hash_population_age["Flanders"]['18-34'] += int(row[20])
+                hash_population_age["Flanders"]['25-34'] += int(row[20])
             elif int(row[19]) <= 44:
                 hash_population_age["Flanders"]['35-44'] += int(row[20])
             elif int(row[19]) <= 54:
@@ -61,10 +69,16 @@ with open("./downloads/TF_SOC_POP_STRUCT_2021.txt", newline='') as file:
             else:
                 hash_population_age["Flanders"]['85+'] += 1
         elif row[10] == 'Waals Gewest':
-            if int(row[19]) <= 17:
-                hash_population_age["Wallonia"]['0-17'] += int(row[20])
+            if int(row[19]) <= 11:
+                hash_population_age["Wallonia"]['00-11'] += int(row[20])
+            elif int(row[19]) <= 15:
+                hash_population_age["Wallonia"]['12-15'] += int(row[20])
+            elif int(row[19]) <= 17:
+                hash_population_age["Wallonia"]['16-17'] += int(row[20])
+            elif int(row[19]) <= 24:
+                hash_population_age["Wallonia"]['18-24'] += int(row[20])
             elif int(row[19]) <= 34:
-                hash_population_age["Wallonia"]['18-34'] += int(row[20])
+                hash_population_age["Wallonia"]['25-34'] += int(row[20])
             elif int(row[19]) <= 44:
                 hash_population_age["Wallonia"]['35-44'] += int(row[20])
             elif int(row[19]) <= 54:
@@ -78,10 +92,16 @@ with open("./downloads/TF_SOC_POP_STRUCT_2021.txt", newline='') as file:
             else:
                 hash_population_age["Wallonia"]['85+'] += 1
         elif row[10] == 'Brussels Hoofdstedelijk Gewest':
-            if int(row[19]) <= 17:
-                hash_population_age["Brussels"]['0-17'] += int(row[20])
+            if int(row[19]) <= 11:
+                hash_population_age["Brussels"]['00-11'] += int(row[20])
+            elif int(row[19]) <= 15:
+                hash_population_age["Brussels"]['12-15'] += int(row[20])
+            elif int(row[19]) <= 17:
+                hash_population_age["Brussels"]['16-17'] += int(row[20])
+            elif int(row[19]) <= 24:
+                hash_population_age["Brussels"]['18-24'] += int(row[20])
             elif int(row[19]) <= 34:
-                hash_population_age["Brussels"]['18-34'] += int(row[20])
+                hash_population_age["Brussels"]['25-34'] += int(row[20])
             elif int(row[19]) <= 44:
                 hash_population_age["Brussels"]['35-44'] += int(row[20])
             elif int(row[19]) <= 54:
@@ -95,10 +115,16 @@ with open("./downloads/TF_SOC_POP_STRUCT_2021.txt", newline='') as file:
             else:
                 hash_population_age["Brussels"]['85+'] += int(row[20])
         else:
-            if int(row[19]) <= 17:
-                hash_population_age["Ostbelgien"]['0-17'] += int(row[20])
+            if int(row[19]) <= 11:
+                hash_population_age["Ostbelgien"]['00-11'] += int(row[20])
+            elif int(row[19]) <= 15:
+                hash_population_age["Ostbelgien"]['12-15'] += int(row[20])
+            elif int(row[19]) <= 17:
+                hash_population_age["Ostbelgien"]['16-17'] += int(row[20])
+            elif int(row[19]) <= 24:
+                hash_population_age["Ostbelgien"]['18-24'] += int(row[20])
             elif int(row[19]) <= 34:
-                hash_population_age["Ostbelgien"]['18-34'] += int(row[20])
+                hash_population_age["Ostbelgien"]['25-34'] += int(row[20])
             elif int(row[19]) <= 44:
                 hash_population_age["Ostbelgien"]['35-44'] += int(row[20])
             elif int(row[19]) <= 54:
@@ -158,10 +184,8 @@ for key in hash_gewesten:
         print(f'Cases of an Undefined region:\t\t\t {hash_gewesten[key]}')
         print(f'Vaccinations in an Undefined region:\t {hash_gewesten_vacc[key]}')
     else:
-        print(f'Cases per 100k people for {key}:\t\t\t {hash_gewesten[key] / (hash_population[key] / 100)}%')
-        print(f'Vaccinations per 100k people for {key}:\t {hash_gewesten_vacc[key] / (hash_population[key] / 100)}%')
-
-print(hash_population_age)
+        print(f'Cases per 100 people for {key}:\t\t\t {hash_gewesten[key] / (hash_population[key] / 100)}%')
+        print(f'Vaccinations per 100 people for {key}:\t {hash_gewesten_vacc[key] / (hash_population[key] / 100)}%')
 
 for key in hash_gewesten_vacc_age:
     print(f'{key}')
