@@ -40,6 +40,8 @@ hash_population_age = {
                    '65-74': 0, '75-84': 0, '85+': 0}
 }
 
+ages_list = ['00-11', '12-15', '16-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65-74', '75-84', '85+']
+
 with open("./downloads/TF_SOC_POP_STRUCT_2021.txt", newline='') as file:
     values = csv.reader(file, delimiter='|', )
     for row in values:
@@ -164,19 +166,27 @@ for element in data_json_vacc:
         continue
     if element['REGION'] in hash_gewesten_vacc:
         if element['AGEGROUP'] in hash_gewesten_vacc_age[element['REGION']]:
-            if element['DOSE'] in ["B", "C"] and ((datetime.datetime.strptime(element['DATE'], '%Y-%m-%d') +
-                                                   datetime.timedelta(weeks=2)) <= datetime.datetime.now()):
+            if (element['DOSE'] == "B" and ((datetime.datetime.strptime(element['DATE'], '%Y-%m-%d') +
+                                             datetime.timedelta(weeks=2)) <= datetime.datetime.now())) or (
+                    element['DOSE'] == "C" and ((datetime.datetime.strptime(element['DATE'], '%Y-%m-%d') +
+                                                 datetime.timedelta(weeks=4)) <= datetime.datetime.now())):
                 hash_gewesten_vacc_age[element['REGION']][element['AGEGROUP']] += element['COUNT']
         else:
-            if element['DOSE'] in ["B", "C"] and ((datetime.datetime.strptime(element['DATE'], '%Y-%m-%d') +
-                                                   datetime.timedelta(weeks=2)) <= datetime.datetime.now()):
+            if (element['DOSE'] == "B" and ((datetime.datetime.strptime(element['DATE'], '%Y-%m-%d') +
+                                             datetime.timedelta(weeks=2)) <= datetime.datetime.now())) or (
+                    element['DOSE'] == "C" and ((datetime.datetime.strptime(element['DATE'], '%Y-%m-%d') +
+                                                 datetime.timedelta(weeks=4)) <= datetime.datetime.now())):
                 hash_gewesten_vacc_age[element['REGION']][element['AGEGROUP']] = element['COUNT']
-        if element['DOSE'] in ["B", "C"] and ((datetime.datetime.strptime(element['DATE'], '%Y-%m-%d') +
-                                               datetime.timedelta(weeks=2)) <= datetime.datetime.now()):
+        if (element['DOSE'] == "B" and ((datetime.datetime.strptime(element['DATE'], '%Y-%m-%d') +
+                                         datetime.timedelta(weeks=2)) <= datetime.datetime.now())) or (
+                element['DOSE'] == "C" and ((datetime.datetime.strptime(element['DATE'], '%Y-%m-%d') +
+                                             datetime.timedelta(weeks=4)) <= datetime.datetime.now())):
             hash_gewesten_vacc[element['REGION']] += element['COUNT']
     else:
-        if element['DOSE'] in ["B", "C"] and ((datetime.datetime.strptime(element['DATE'], '%Y-%m-%d') +
-                                               datetime.timedelta(weeks=2)) <= datetime.datetime.now()):
+        if (element['DOSE'] == "B" and ((datetime.datetime.strptime(element['DATE'], '%Y-%m-%d') +
+                                         datetime.timedelta(weeks=2)) <= datetime.datetime.now())) or (
+                element['DOSE'] == "C" and ((datetime.datetime.strptime(element['DATE'], '%Y-%m-%d') +
+                                             datetime.timedelta(weeks=4)) <= datetime.datetime.now())):
             hash_gewesten_vacc[element['REGION']] = element['COUNT']
 
 for key in hash_gewesten:
@@ -187,9 +197,17 @@ for key in hash_gewesten:
         print(f'Cases per 100 people for {key}:\t\t\t {hash_gewesten[key] / (hash_population[key] / 100)}%')
         print(f'Vaccinations per 100 people for {key}:\t {hash_gewesten_vacc[key] / (hash_population[key] / 100)}%')
 
+print("\t\tFlanders\t\t\tWallonia\t\t\tBrussels")
+ages_list.reverse()
+for key2 in ages_list:
+    print(f'{key2}\t'
+          f'{hash_gewesten_vacc_age["Flanders"][key2] / (hash_population_age["Flanders"][key2] / 100)}\t'
+          f'{hash_gewesten_vacc_age["Wallonia"][key2] / (hash_population_age["Wallonia"][key2] / 100)}\t'
+          f'{hash_gewesten_vacc_age["Brussels"][key2] / (hash_population_age["Brussels"][key2] / 100)}')
+
 for key in hash_gewesten_vacc_age:
     print(f'{key}')
-    for key2 in hash_gewesten_vacc_age[key]:
+    for key2 in ages_list:
         if hash_population_age[key][key2] != 0:
             print(f'{key2} :: {hash_gewesten_vacc_age[key][key2] / (hash_population_age[key][key2] / 100)}%')
 
